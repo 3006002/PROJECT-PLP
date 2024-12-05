@@ -19,8 +19,8 @@ let expenses = [];
 //create an expense
 app.post("/api/expenses", (req, res) => {
      try { 
-        const { category, description, amount } = req.body;
-   if (!category || !description || !amount) {
+        const { category, description, amount, date } = req.body;
+   if (!category || !description || !amount || !date) {
     return res.status(400).json({ error: "Fill the form" }); 
    }
     
@@ -32,6 +32,7 @@ app.post("/api/expenses", (req, res) => {
         category,
         description,
         amount: parseFloat(amount),
+        date: new Date(date)
     };
     
     expenses.push(newExpense);
@@ -65,7 +66,7 @@ app.get("/api/expenses/:id", (req, res) => {
 // update an expense
 app.put("/api/expenses/:id", (req, res) => {
     const id = parseInt(req.params.id);
-    const { category, description, amount } = req.body;
+    const { category, description, amount, date } = req.body;
 
   const expenseIndex = expenses.findIndex((expense) => expense.id === id);
   if (expenseIndex === -1) {
@@ -73,10 +74,10 @@ app.put("/api/expenses/:id", (req, res) => {
   }
     
     // Validating the updated data
-    if (!category || !description || isNaN(amount)) {
-        return res.status(400).json({ error: "Invalid input data" });
-    }
-    expenses[expenseIndex] = { id, category, description, amount: parseFloat(amount) };
+    if (!category || !description || Number.isNaN(parseFloat(amount)) || isNaN(new Date(date).getTime())) {
+      return res.status(400).json({ error: "Invalid input data" });
+  }
+    expenses[expenseIndex] = { id, category, description, amount: parseFloat(amount), date: new Date(date) };
   res.json(expenses[expenseIndex]);
 
      
