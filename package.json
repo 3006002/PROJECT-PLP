@@ -1,0 +1,25 @@
+{
+    "name": "plp-java",
+    "version": "1.0.0",
+    "description": "In this week, you will delve into backend development using server-side scripting with Node.js and Express.js. You will set up a basic Express.js server and create API endpoints for user authentication, expense management, and expense calculations. This will provide hands-on experience with backend development, API design, and routing using Express.js.",
+    "main": "server.js",
+    "scripts": {
+        "start": " node server.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "bcryptjs": "^2.4.3",
+        "body-parser": "^1.20.3",
+        "express": "^4.21.2",
+        "express-session": "^1.18.0",
+        "express-validator": "^7.2.0",
+        "mysql2": "^3.11.2",
+        "path": "^0.12.7"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.4"
+    }
+}

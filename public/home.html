@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <h1> Expense Tracker</h1>
+    <br>
+    <div>
+        <form id="add-expenses">
+            <h2> ADD EXPENSES</h2>
+            <br>
+            <label for="category">Category</label>
+            <input type="text" id="category" name="category">
+            <br>
+            <label for="description">Description</label>
+            <input type="text" id="description" name="description">
+            <br>
+            <label for="Amount">Amount</label>
+            <input type="number" id="amount" name="amount">
+            <br>
+            <button type="submit">Add</button>
+        </form>
+    </div>
+
+    <div>
+        <form id="edit-expense-form" style="display:none">
+            <h2>Edit expense</h2>
+            <input type="hidden" id="edit-id">
+            <label for="edit-category">Category</label>
+            <input type="text" id="edit-category" name="edit-category">
+            <br>
+            <label for="edit-description">Description</label>
+            <input type="text" id="edit-description" name="edit-description">
+            <br>
+            <label for="edit-amount">Amount</label>
+            <input type="number" id="edit-amount" name="edit-amount">
+            <br>
+            <button type="submit">Update</button>
+            <button type="button" id="cancel-edit" onClick="cancelEdit()">Cancel</button>
+
+        </form>
+    </div>
+
+    <div>
+        <h2>EXPENSES</h2>
+        <table id="expenseTable">
+            <thead>
+
+                <tr>
+                    <th>ID</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+
+                </tr>
+
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                  <td colspan="2">Total Expense</td>
+                  <td id="totalExpense">0.00</td>
+                  </tr>
+              </tfoot>
+
+        </table>
+    </div>
+    <!--linkin to index.js-->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        fetchExpense();  // Trigger fetchExpense when the page loads
+    });
+        function fetchExpense() {
+            
+            fetch ('/api/expenses')
+                .then((response) => response.json())
+                .then((budgets) => {
+                    const tbody = document.querySelector('#expenseTable tbody');
+                    tbody.innerHTML = '';
+
+                    budgets.forEach (budget => {
+                        const tablerow = document.createElement('tr');
+                        tablerow.innerHTML = `
+                <td>${budget.id}</td>
+                <td>${budget.category}</td>
+                <td>${budget.description}</td>
+                <td>${budget.amount}</td>
+                <td>
+                    <button onClick="editExpense(${budget.id})">Edit</button>
+                    <button onClick="deleteExpense(${budget.id})">Delete</button>
+                    </td>
+                `;
+                        tbody.appendChild(tablerow); //attach tablerow and table body
+                    })
+                    // Update the total expense after fetching all expenses
+            fetchTotalExpense();
+
+                }
+            )};
+                
+    
+
+        // Function to fetch and display the total expense
+       
+      // Function to fetch and display the total expense
+ 
+    function fetchTotalExpense() {
+        fetch("/api/expense")
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("totalExpense").textContent =
+              data.totalExpense;
+          });
+      }
+        document.getElementById('add-expenses').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value;
+            const amount = document.getElementById('amount').value;
+
+            fetch("/api/expenses", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ category, description, amount })
+            })
+                .then(response => {
+        if (!response.ok) {
+            // If the response is not successful, return the error message as JSON
+            return response.json().then(err => { throw new Error(err.error); });
+        }
+        return response.json();  // Parse the JSON if successful
+    })              
+                
+                .then(() => {
+                    document.getElementById('add-expenses').reset();
+                    fetchExpense();
+                })
+                .catch(error => {
+      console.error("Error:", error);
+      alert("Failed to add expense: " + error.message);
+    });
+});     
+
+        
+        // function to populate
+        function editExpense(id) {
+            fetch(`/api/expenses/${id}`)
+                .then(response => response.json())
+                .then(expense => {
+                    document.getElementById('edit-id').value = expense.id;
+                    document.getElementById('edit-category').value = expense.category;
+                    document.getElementById('edit-description').value = expense.description;
+                    document.getElementById('edit-amount').value = expense.amount;
+
+                    document.getElementById('edit-expense-form').style.display = 'block';
+                    document.getElementById('add-expenses').style.display = 'none';
+                });
+        }
+        // handle form: filling the edited changes
+        document.getElementById('edit-expense-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+           const category = document.getElementById('edit-category').value;
+            const description = document.getElementById('edit-description').value;
+            const amount = document.getElementById('edit-amount').value;
+
+            fetch(`/api/expenses/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ category, description, amount })
+            })
+                .then(response => response.json())
+                .then(() => {
+                    document.getElementById('edit-expense-form').reset();
+                    document.getElementById('edit-expense-form').style.display = 'none';
+                    document.getElementById('add-expenses').style.display = 'block';
+                    
+                    fetchExpense();
+                }
+
+                );
+        })
+        //function cancel edit
+        function cancelEdit(){
+            document.getElementById('edit-expense-form').reset();
+                    document.getElementById('edit-expense-form').style.display = 'none';
+                    document.getElementById('add-expenses').style.display = 'block';
+
+        };
+        //function to delete expenses
+        function deleteExpense(id) {
+    fetch(`/api/expenses/${id}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())  // Ensure we handle the response as JSON
+    .then((data) => {
+        if (data.error) {
+            alert(data.error);  // If there's an error, show an alert
+        } else {
+            fetchExpense();  // Reload the expenses after successful deletion
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);  // Log any errors
+        alert("Failed to delete expense: " + error.message);
+    });
+}
+
+         
+        document.addEventListener('DOMContentLoaded', function () {
+    fetchExpense();
+});
+
+    </script>
+
+</body>
+
+</html>
