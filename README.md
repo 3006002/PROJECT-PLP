@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+ 
 # PROJECT-PLP
 Final PLP project Submission.
 # Abouts
